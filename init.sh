@@ -3,6 +3,11 @@
 if [ ! -d /data/config ]; then
 	mkdir /data/config
 fi
+
+if [ ! -d /data/config ]; then
+	mkdir /data/nginx
+fi
+
 if [ ! -d /data/rrd ]; then
 	mkdir /data/rrd
 fi
