@@ -133,6 +133,22 @@ sed -i -e "s/\$config\['db_user'\] = .*;/\$config\['db_user'\] = \"$DB_USER\";/g
 sed -i -e "s/\$config\['db_host'\] = .*;/\$config\['db_host'\] = \"$DB_HOST\";/g" /data/config/config.php
 sed -i -e "s/\$config\['db_name'\] = .*;/\$config\['db_name'\] = \"$DB_NAME\";/g" /data/config/config.php
 
+# Network myNetwork
+sed -i "/\$config\['nets'\].*;/d" /data/config/config.php
+echo "\$config['nets']       = \"10.11.23.0/24\";" >> /data/config/config.php
+
+# Nerwork Scan by IP
+sed -i "/\$config\['discovery_by_ip'\].*;/d" /data/config/config.php
+echo "\$config['discovery_by_ip']       = \"true\";" >> /data/config/config.php
+
+# Allow Duplicate SysName
+sed -i "/\$config\['allow_duplicate_sysName'\].*;/d" /data/config/config.php
+echo "\$config['allow_duplicate_sysName']       = \"true\";" >> /data/config/config.php
+
+# Force IP to SysName
+sed -i "/\$config\['force_ip_to_sysname'\].*;/d" /data/config/config.php
+echo "\$config['force_ip_to_sysname']       = \"true\";" >> /data/config/config.php
+
 # Migration purpose; replaced by the use of rrdcached
 sed -i "/\$config\['rrd_dir'\].*;/d" /data/config/config.php
 echo "\$config['rrd_dir']       = \"/data/rrd\";" >> /data/config/config.php
