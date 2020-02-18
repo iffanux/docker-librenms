@@ -199,109 +199,6 @@ then
   echo "\$config['enable_syslog'] = 1;" >> /data/config/config.php
 fi
 
-# LDAP support
-LDAP_ENABLED=${LDAP_ENABLED:-0}
-if [ "${LDAP_ENABLED}" == "1" ]
-then
-  echo "setup ldap support"
-
-  LDAP_VERSION=${LDAP_VERSION:-3}
-  LDAP_SERVER=${LDAP_SERVER:-ldap.example.com}
-  LDAP_PORT=${LDAP_PORT:-389}
-  LDAP_PREFIX=${LDAP_PREFIX:-uid=}
-  LDAP_SUFFIX=${LDAP_SUFFIX:-,ou=People,dc=example,dc=com}
-
-  sed -i "/\$config\['auth_mechanism'\].*;/d" /data/config/config.php
-  echo "\$config['auth_mechanism']                        = \"ldap\";" >> /data/config/config.php
-
-  sed -i "/\$config\['auth_ldap_version'\].*;/d" /data/config/config.php
-  echo "\$config['auth_ldap_version']                     = \"${LDAP_VERSION}\";" >> /data/config/config.php
-
-  sed -i "/\$config\['auth_ldap_server'\].*;/d" /data/config/config.php
-  echo "\$config['auth_ldap_server']                      = \"${LDAP_SERVER}\";" >> /data/config/config.php
-
-  sed -i "/\$config\['auth_ldap_port'\].*;/d" /data/config/config.php
-  echo "\$config['auth_ldap_port']                        = \"${LDAP_PORT}\";" >> /data/config/config.php
-
-  sed -i "/\$config\['auth_ldap_prefix'\].*;/d" /data/config/config.php
-  echo "\$config['auth_ldap_prefix']                      = \"${LDAP_PREFIX}\";" >> /data/config/config.php
-
-  sed -i "/\$config\['auth_ldap_suffix'\].*;/d" /data/config/config.php
-  echo "\$config['auth_ldap_suffix']                      = \"${LDAP_SUFFIX}\";" >> /data/config/config.php
-
-
-  LDAP_GROUP=${LDAP_GROUP:-cn=groupname,ou=groups,dc=example,dc=com}
-  LDAP_GROUP_BASE=${LDAP_GROUP_BASE:-ou=group,dc=example,dc=com}
-  LDAP_GROUP_MEMBER_ATTR=${LDAP_GROUP_MEMBER_ATTR:-member}
-  LDAP_GROUP_MEMBER_TYPE=${LDAP_GROUP_MEMBER_TYPE:-}
-
-  sed -i "/\$config\['auth_ldap_group'\].*;/d" /data/config/config.php
-  if [ "${LDAP_GROUP}" == "false" ]; then
-    echo "\$config['auth_ldap_group']                       = false;" >> /data/config/config.php
-  else
-    echo "\$config['auth_ldap_group']                       = \"${LDAP_GROUP}\";" >> /data/config/config.php
-  fi
-
-  sed -i "/\$config\['auth_ldap_groupbase'\].*;/d" /data/config/config.php
-  echo "\$config['auth_ldap_groupbase']                   = \"${LDAP_GROUP_BASE}\";" >> /data/config/config.php
-
-  sed -i "/\$config\['auth_ldap_groupmemberattr'\].*;/d" /data/config/config.php
-  echo "\$config['auth_ldap_groupmemberattr']             = \"${LDAP_GROUP_MEMBER_ATTR}\";" >> /data/config/config.php
-
-  sed -i "/\$config\['auth_ldap_groups'\].*;/d" /data/config/config.php
-  echo "\$config['auth_ldap_groups']['admin']['level']    = 10;" >> /data/config/config.php
-  echo "\$config['auth_ldap_groups']['pfy']['level']      = 7;" >> /data/config/config.php
-  echo "\$config['auth_ldap_groups']['support']['level']  = 1;" >> /data/config/config.php
-
-  sed -i "/\$config\['auth_ldap_groupmembertype'\].*;/d" /data/config/config.php
-  echo "\$config['auth_ldap_groupmembertype']             = \"${LDAP_GROUP_MEMBER_TYPE}\";" >> /data/config/config.php
-
-  # See: https://docs.librenms.org/#Extensions/Authentication/#ldap-authentication
-  LDAP_AUTH_BIND=${LDAP_AUTH_BIND:-0}
-  LDAP_BIND_USER=${LDAP_BIND_USER:-}
-  LDAP_BIND_DN=${LDAP_BIND_DN:-}
-  LDAP_BIND_PASSWORD=${LDAP_BIND_PASSWORD:-pwd4librenms}
-  if [ "${LDAP_AUTH_BIND}" == "1" ]; then
-    sed -i "/\$config\['auth_ldap_binduser'\].*;/d" /data/config/config.php
-    if [ -n "${LDAP_BIND_USER}" ]; then
-      echo "\$config['auth_ldap_binduser']                    = \"${LDAP_BIND_USER}\";" >> /data/config/config.php
-    fi
-
-    sed -i "/\$config\['auth_ldap_binddn'\].*;/d" /data/config/config.php
-    if [ -n "${LDAP_BIND_DN}" ]; then
-      echo "\$config['auth_ldap_binddn']                      = \"${LDAP_BIND_DN}\";" >> /data/config/config.php
-    fi
-
-    sed -i "/\$config\['auth_ldap_bindpassword'\].*;/d" /data/config/config.php
-    echo "\$config['auth_ldap_bindpassword']                = \"${LDAP_BIND_PASSWORD}\";" >> /data/config/config.php
-  fi
-fi
-
-CEPH_ENABLED=${CEPH_ENABLED:-0}
-CEPH_RELEASE=${CEPH_RELEASE:-luminous}
-if [ "${CEPH_ENABLED}" == "1" ]; then
-    echo "Clone ceph-nagios-plugins repo from github."
-    cd /opt
-    git clone https://github.com/ceph/ceph-nagios-plugins.git ceph-nagios-plugins
-
-    echo "Install ceph-nagios-plugins"
-    cd /opt/ceph-nagios-plugins
-    make install
-
-    echo "Install ceph binaries"
-
-    # http://docs.ceph.com/docs/master/install/get-packages/
-    # Import release key
-    curl -o - --silent 'https://download.ceph.com/keys/release.asc' | apt-key add -
-
-    # Add official deb repo
-    apt-add-repository "deb https://download.ceph.com/debian-${CEPH_RELEASE}/ $(lsb_release -sc) main"
-
-    # Update and install ceph
-    apt-get update -qq
-    apt-get install -y -q ceph-common > /dev/null
-fi
-
 if [ -d "/data/monitoring-plugins" ]; then
     ln -s /data/monitoring-plugins/* /usr/lib/nagios/plugins
 fi
@@ -311,7 +208,7 @@ fi
 if [ -f /etc/container_environment/WEATHERMAP ] ; then
 	cd /data/plugins/
 	if [ ! -d /data/plugins/Weathermap ] ; then
-		git clone https://github.com/setiseta/Weathermap.git
+		git clone https://github.com/librenms-plugins/Weathermap.git
 	else
 		cd /data/plugins/Weathermap
 		git pull
