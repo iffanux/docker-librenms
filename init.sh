@@ -196,7 +196,7 @@ fi
 SYSLOG_ENABLED=${SYSLOG_ENABLED:-0}
 if [ "${SYSLOG_ENABLED}" == "1" ]
 then
-  echo "\$config['enable_syslog'] = 1;" >> /data/config/config.php
+  echo "\$config['enable_syslog'] = 0;" >> /data/config/config.php
 fi
 
 if [ -d "/data/monitoring-plugins" ]; then
